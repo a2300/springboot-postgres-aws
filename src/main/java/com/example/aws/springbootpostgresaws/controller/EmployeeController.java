@@ -1,23 +1,34 @@
 package com.example.aws.springbootpostgresaws.controller;
 
-import com.example.aws.springbootpostgresaws.ResouceNotFoundException;
+import com.example.aws.springbootpostgresaws.exception.ResouceNotFoundException;
 import com.example.aws.springbootpostgresaws.model.Employee;
+import com.example.aws.springbootpostgresaws.model.EmployeeImage;
 import com.example.aws.springbootpostgresaws.repository.EmployeeRepository;
 
+import com.example.aws.springbootpostgresaws.service.FileArchiveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 public class EmployeeController {
+
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private FileArchiveService fileArchiveService;
+
     @PostMapping("/employees")
-    public Employee addEmployee(@RequestBody Employee employee) {
+    public Employee addEmployee(@RequestParam(value="name", required=true) String name,
+                                @RequestParam(value="image", required=true) MultipartFile image) {
+
+        EmployeeImage employeeImage = fileArchiveService.saveFileToS3(image);
+        Employee employee = new Employee(name, employeeImage);
         return employeeRepository.save(employee);
     }
 
@@ -49,6 +60,7 @@ public class EmployeeController {
     public ResponseEntity<Void> deleteEmployee(@PathVariable(value = "id") Integer employeeId) {
         Employee employee = employeeRepository.findById(employeeId).orElseThrow(
                 () -> new ResouceNotFoundException("Employee not found" + employeeId));
+        fileArchiveService.deleteImageFromS3(employee.getEmployeeImage());
         employeeRepository.delete(employee);
         return ResponseEntity.ok().build();
     }

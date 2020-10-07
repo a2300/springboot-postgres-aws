@@ -33,6 +33,24 @@ Then, create an RDS instance, with these properties:
 * Database name: employeedb
 * Launch!!
 
+### Create an S3 bucket
+
+Create an S3 bucket, name it `kurkul-java-springboot-postgres-aws-demo` and give read permissions to anonymous users. Just copy and paste this aws policy to enable anonymous read access:
+
+	{
+	  "Version":"2012-10-17",
+	  "Statement":[
+	    {
+	      "Sid":"AddPerm",
+	      "Effect":"Allow",
+	      "Principal": "*",
+	      "Action":["s3:GetObject"],
+	      "Resource":["arn:aws:s3:::kurkul-java-springboot-postgres-aws-demo/*"]
+	    }
+	  ]
+	}
+
+
 #### Create an IAM User
 
 - Enable programmatic access
@@ -50,6 +68,7 @@ Create an IAM role with the following properties:
 - EC2 role (i.e., a role to be attached to EC2 instances)
 - Policies:
 	- AmazonRDSFullAccess
+    - AmazonS3FullAccess
 
 **WARNING**: It's a good practice to limit policies and not give all available permissions. We're selecting FullAccess as a proof of concept. Real deployment environments must have more restrictive policies.
 
@@ -87,3 +106,6 @@ If your EC2 instance has the appropriate role (see prerequisites above), and the
 See:
 https://www.briansdevblog.com/2016/05/spring-boot-amazon-web-services-ec2-rds-s3/
 https://github.com/codeurjc/spring-cloud-aws-sample
+
+Run:
+SPRING_APPLICATION_JSON={"database-name": "employeedb", "db-instance-identifier": "employeedb", "rdsUserName": "postgres", "rdsPassword": "postgres", "accessKey": "",  "secretKey": ""}
